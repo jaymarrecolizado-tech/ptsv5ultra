@@ -19,7 +19,25 @@
     <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="container">
+    <div id="auth-overlay" class="auth-overlay hidden">
+        <div class="auth-overlay-content">
+            <h2>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+                Authentication Required
+            </h2>
+            <p>Please log in to access the dashboard.</p>
+            <a href="login.html" class="btn">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                </svg>
+                Login to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <div id="dashboard-container" class="container">
         <!-- Sidebar Navigation -->
         <div class="sidebar">
             <div class="logo">
@@ -110,12 +128,12 @@
                         </svg>
                         Refresh
                     </button>
-                    <a href="login.html" class="btn btn-accent" style="text-decoration: none;">
+                    <button class="btn btn-accent" id="logout-btn">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                         </svg>
                         Logout
-                    </a>
+                    </button>
                 </div>
             </div>
 
@@ -275,21 +293,17 @@
                             </div>
                             <div class="form-group">
                                 <label for="province">Province *</label>
-                                <select id="province" required>
-                                    <option value="">Select Province</option>
-                                    <option value="Batanes">Batanes</option>
-                                    <option value="Cagayan">Cagayan</option>
-                                    <option value="Other">Other</option>
-                                </select>
+                                <div class="autocomplete-wrapper">
+                                    <input type="text" id="province" required placeholder="Type to search provinces..." autocomplete="off">
+                                    <div class="suggestions-dropdown" id="province-suggestions"></div>
+                                </div>
                             </div>
                             <div class="form-group">
                                 <label for="district">District *</label>
-                                <select id="district" required>
-                                    <option value="">Select District</option>
-                                    <option value="District I">District I</option>
-                                    <option value="District III">District III</option>
-                                    <option value="Other">Other</option>
-                                </select>
+                                <div class="autocomplete-wrapper">
+                                    <input type="text" id="district" required placeholder="Type to search districts..." autocomplete="off">
+                                    <div class="suggestions-dropdown" id="district-suggestions"></div>
+                                </div>
                             </div>
                             <div class="form-group">
                                 <label for="latitude">Latitude * (-90 to 90)</label>
@@ -466,6 +480,44 @@
                 </div>
 
                 <div id="summary-report" class="tab-content active">
+                    <div class="report-filters">
+                        <div class="filter-group">
+                            <label>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                                </svg>
+                                Status:
+                            </label>
+                            <select id="summary-status-filter">
+                                <option value="all">All</option>
+                                <option value="Done">Completed</option>
+                                <option value="Pending">Pending</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                                </svg>
+                                Province:
+                            </label>
+                            <select id="summary-province-filter">
+                                <option value="all">All Provinces</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                Date Range:
+                            </label>
+                            <input type="date" id="summary-date-from" placeholder="From">
+                            <span>to</span>
+                            <input type="date" id="summary-date-to" placeholder="To">
+                        </div>
+                    </div>
+
                     <div class="card">
                         <div class="card-header">
                             <h2>
@@ -519,6 +571,33 @@
                 </div>
 
                 <div id="province-report" class="tab-content">
+                    <div class="report-filters">
+                        <div class="filter-group">
+                            <label>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                                </svg>
+                                Status:
+                            </label>
+                            <select id="province-status-filter">
+                                <option value="all">All</option>
+                                <option value="Done">Completed</option>
+                                <option value="Pending">Pending</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                                </svg>
+                                Province:
+                            </label>
+                            <select id="province-province-filter">
+                                <option value="all">All Provinces</option>
+                            </select>
+                        </div>
+                    </div>
+
                     <div class="card">
                         <div class="card-header">
                             <h2><span>🏘️</span> Province Analysis Report</h2>
@@ -554,9 +633,37 @@
                 </div>
 
                 <div id="timeline-report" class="tab-content">
+                    <div class="report-filters">
+                        <div class="filter-group">
+                            <label>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                                </svg>
+                                Status:
+                            </label>
+                            <select id="timeline-status-filter">
+                                <option value="all">All</option>
+                                <option value="Done">Completed</option>
+                                <option value="Pending">Pending</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                Date Range:
+                            </label>
+                            <input type="date" id="timeline-date-from" placeholder="From">
+                            <span>to</span>
+                            <input type="date" id="timeline-date-to" placeholder="To">
+                        </div>
+                    </div>
+
                     <div class="card">
                         <div class="card-header">
                             <h2><span>📅</span> Implementation Timeline Report</h2>
+                            <button class="btn" id="generate-timeline-pdf">Generate PDF Report</button>
                         </div>
                         <div style="padding: 20px;">
                             <div class="chart-container">
@@ -586,9 +693,39 @@
                 </div>
 
                 <div id="status-report" class="tab-content">
+                    <div class="report-filters">
+                        <div class="filter-group">
+                            <label>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                                </svg>
+                                Province:
+                            </label>
+                            <select id="status-province-filter">
+                                <option value="all">All Provinces</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                Pending Duration:
+                            </label>
+                            <select id="status-duration-filter">
+                                <option value="all">All</option>
+                                <option value="30">Less than 30 days</option>
+                                <option value="60">Less than 60 days</option>
+                                <option value="90">Less than 90 days</option>
+                                <option value="90">90+ days</option>
+                            </select>
+                        </div>
+                    </div>
+
                     <div class="card">
                         <div class="card-header">
                             <h2><span>✅</span> Status Analysis Report</h2>
+                            <button class="btn" id="generate-status-pdf">Generate PDF Report</button>
                         </div>
                         <div style="padding: 20px;">
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-bottom: 30px;">
@@ -637,7 +774,6 @@
         </div>
     </div>
 
-    <script src="js/auth.js"></script>
     <script src="js/utils/sanitizer.js"></script>
     <script src="js/utils/validator.js"></script>
     <script src="js/utils/debounce.js"></script>
@@ -646,5 +782,6 @@
     <script src="js/services/chartService.js"></script>
     <script src="js/services/uiService.js"></script>
     <script src="js/app.js"></script>
+    <script src="js/auth.js"></script>
 </body>
 </html>

@@ -77,7 +77,7 @@ async def login(login_data: LoginRequest, db: AsyncSession = Depends(get_db)):
     if not user:
         raise HTTPException(status_code=401, detail="Incorrect username or password")
 
-    if not verify_password(login_data.password, user.password_hash):
+    if not verify_password(login_data.password, str(user.password_hash)):
         raise HTTPException(status_code=401, detail="Incorrect username or password")
 
     if not user.is_active:

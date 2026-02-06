@@ -2,16 +2,18 @@
  * Authentication Service for Static Dashboard
  */
 const AuthService = {
-    API_BASE_URL: 'http://localhost:8000/api/v1',
+    isLoggedIn: false,
+    currentUser: null,
 
     init() {
         this.checkAuth();
-        this.setupAutoRefresh();
-        this.addLogoutButton();
+        this.setupLogoutListener();
+        this.setupUI();
     },
 
     checkAuth() {
         const token = localStorage.getItem('access_token');
+        const userStr = localStorage.getItem('user');
         const currentPath = window.location.pathname;
 
         // Allow access to landing and login pages
@@ -19,91 +21,91 @@ const AuthService = {
             return;
         }
 
-        // If no token and not on login/landing page, redirect to login
-        if (!token && !currentPath.endsWith('login.html')) {
-            window.location.href = 'login.html';
-            return;
-        }
-
-        // If token exists, verify it's valid
-        if (token) {
-            this.verifyToken(token);
-        }
-    },
-
-    async verifyToken(token) {
-        try {
-            const response = await fetch(`${this.API_BASE_URL}/auth/me`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-
-            if (!response.ok) {
-                throw new Error('Invalid token');
+        // Check if authenticated
+        if (token && userStr) {
+            try {
+                this.currentUser = JSON.parse(userStr);
+                this.isLoggedIn = true;
+                this.showDashboard();
+            } catch (e) {
+                this.isLoggedIn = false;
+                this.showAuthOverlay();
             }
-
-            const user = await response.json();
-            this.currentUser = user;
-            localStorage.setItem('user', JSON.stringify(user));
-            this.applyRBAC();
-        } catch (error) {
-            console.error('Token verification failed:', error);
-            this.logout();
+        } else {
+            this.isLoggedIn = false;
+            this.showAuthOverlay();
         }
     },
 
-    setupAutoRefresh() {
-        setInterval(async () => {
-            const accessToken = localStorage.getItem('access_token');
-            const refreshToken = localStorage.getItem('refresh_token');
+    showDashboard() {
+        const authOverlay = document.getElementById('auth-overlay');
+        const dashboardContainer = document.getElementById('dashboard-container');
 
-            if (!accessToken || !refreshToken) return;
+        if (authOverlay) {
+            authOverlay.classList.remove('active');
+            authOverlay.classList.add('hidden');
+        }
+
+        if (dashboardContainer) {
+            dashboardContainer.classList.add('active');
+        }
+
+        // Update map and charts when dashboard becomes visible
+        setTimeout(() => {
+            try {
+                if (window.MapService && MapService.renderProjects && window.DataService) {
+                    MapService.renderProjects(DataService.getAllProjects());
+                }
+            } catch (e) {
+                console.error('Error updating map:', e);
+            }
 
             try {
-                const response = await fetch(`${this.API_BASE_URL}/auth/token/refresh`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ refresh_token: refreshToken })
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    localStorage.setItem('access_token', data.access_token);
-                    localStorage.setItem('refresh_token', data.refresh_token);
-                    console.log('Token refreshed successfully');
-                } else {
-                    throw new Error('Token refresh failed');
+                if (window.ChartService && ChartService.updateAllCharts && window.DataService) {
+                    ChartService.updateAllCharts();
                 }
-            } catch (error) {
-                console.error('Auto-refresh failed:', error);
-                this.logout();
+            } catch (e) {
+                console.error('Error updating charts:', e);
             }
-        }, 25 * 60 * 1000); // Refresh every 25 minutes (access token expires in 30)
+
+            try {
+                if (window.UIService && UIService.updateStats && window.DataService) {
+                    UIService.updateStats();
+                }
+            } catch (e) {
+                console.error('Error updating stats:', e);
+            }
+        }, 100);
+
+        this.applyRBAC();
+    },
+
+    showAuthOverlay() {
+        const authOverlay = document.getElementById('auth-overlay');
+        const dashboardContainer = document.getElementById('dashboard-container');
+
+        if (authOverlay) {
+            authOverlay.classList.remove('hidden');
+            setTimeout(() => {
+                authOverlay.classList.add('active');
+            }, 10);
+        }
+
+        if (dashboardContainer) {
+            dashboardContainer.classList.remove('active');
+        }
     },
 
     logout() {
-        const refreshToken = localStorage.getItem('refresh_token');
-
-        // Call logout endpoint if refresh token exists
-        if (refreshToken) {
-            fetch(`${this.API_BASE_URL}/auth/logout`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ refresh_token: refreshToken })
-            }).catch(err => console.error('Logout API error:', err));
-        }
-
         // Clear local storage
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
         localStorage.removeItem('user');
 
-        // Redirect to login
+        this.isLoggedIn = false;
+        this.currentUser = null;
+
+        // Redirect to login page
         window.location.href = 'login.html';
     },
 
@@ -142,9 +144,9 @@ const AuthService = {
         }
 
         // Import data - Admin and Editor only
-        const importDataBtn = document.querySelector('[data-tab="data-migration"]');
-        if (importDataBtn) {
-            importDataBtn.style.display = this.hasPermission('add_project') ? 'flex' : 'none';
+        const importDataTab = document.querySelector('[data-tab="data-migration"]');
+        if (importDataTab) {
+            importDataTab.style.display = this.hasPermission('add_project') ? 'flex' : 'none';
         }
 
         // Manual entry - Admin and Editor only
@@ -159,80 +161,62 @@ const AuthService = {
         });
     },
 
-    addLogoutButton() {
-        const navbar = document.querySelector('.navbar');
-        if (!navbar) return;
-
-        // Check if logout button already exists
-        if (document.getElementById('logout-btn')) return;
-
-        const logoutBtn = document.createElement('button');
-        logoutBtn.id = 'logout-btn';
-        logoutBtn.className = 'nav-logout-btn';
-        logoutBtn.innerHTML = `
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width: 20px; height: 20px; margin-right: 6px;">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-            </svg>
-            Logout
-        `;
-        logoutBtn.style.cssText = `
-            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            font-size: 14px;
-            box-shadow: 0 4px 14px rgba(231, 76, 60, 0.3);
-        `;
-
-        logoutBtn.addEventListener('mouseenter', function() {
-            this.style.transform = 'translateY(-2px)';
-            this.style.boxShadow = '0 6px 20px rgba(231, 76, 60, 0.4)';
-        });
-
-        logoutBtn.addEventListener('mouseleave', function() {
-            this.style.transform = 'translateY(0)';
-            this.style.boxShadow = '0 4px 14px rgba(231, 76, 60, 0.3)';
-        });
-
-        logoutBtn.addEventListener('click', () => {
-            if (confirm('Are you sure you want to logout?')) {
-                this.logout();
-            }
-        }.bind(this));
-
-        // Add logout button to navbar
-        const ctaButton = navbar.querySelector('.nav-cta');
-        if (ctaButton) {
-            ctaButton.parentNode.insertBefore(logoutBtn, ctaButton);
+    setupLogoutListener() {
+        const logoutBtn = document.getElementById('logout-btn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', () => {
+                if (confirm('Are you sure you want to logout?')) {
+                    this.logout();
+                }
+            });
         }
     },
 
-    // API wrapper that includes auth token
-    async apiCall(endpoint, options = {}) {
-        const token = localStorage.getItem('access_token');
+    setupUI() {
+        // Add user info to header if available
+        const user = this.getUser();
+        if (!user) return;
 
-        const defaultOptions = {
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': token ? `Bearer ${token}` : ''
-            },
-            ...options
-        };
-
-        const response = await fetch(`${this.API_BASE_URL}${endpoint}`, defaultOptions);
-
-        if (response.status === 401) {
-            this.logout();
-            throw new Error('Unauthorized');
+        // Check if user info already exists to prevent duplicates
+        const existingUserInfo = document.querySelector('.user-info');
+        if (existingUserInfo) {
+            existingUserInfo.remove();
         }
 
-        return response;
+        const headerActions = document.querySelector('.header-actions');
+        if (headerActions) {
+                const userInfo = document.createElement('div');
+                userInfo.className = 'user-info';
+                userInfo.style.cssText = 'display: flex; align-items: center; gap: 12px; padding: 8px 16px; background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-right: 12px;';
+                userInfo.innerHTML = `
+                    <div style="width: 36px; height: 36px; background: linear-gradient(135deg, var(--primary), var(--secondary)); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 0.875rem;">
+                        ${(user.username || user.email || 'U').charAt(0).toUpperCase()}
+                    </div>
+                    <div style="text-align: left;">
+                        <div style="font-weight: 600; font-size: 0.875rem; color: var(--text);">${user.username || user.email || 'User'}</div>
+                        <div style="font-size: 0.75rem; color: var(--text-light); text-transform: capitalize;">${user.role || 'Viewer'}</div>
+                    </div>
+                `;
+                const logoutBtn = document.getElementById('logout-btn');
+                if (logoutBtn) {
+                    headerActions.insertBefore(userInfo, logoutBtn);
+                }
+            }
+        }
+    },
+
+    // For demo purposes, allow setting a mock user
+    setDemoUser(username, role = 'admin') {
+        const user = {
+            id: 'demo-user-1',
+            username: username,
+            email: `${username}@example.com`,
+            role: role
+        };
+        localStorage.setItem('access_token', 'demo-token-' + Date.now());
+        localStorage.setItem('user', JSON.stringify(user));
+        this.currentUser = user;
+        this.isLoggedIn = true;
     }
 };
 

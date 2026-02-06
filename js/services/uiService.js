@@ -40,8 +40,8 @@ const UIService = {
         }
 
         if (tabId === 'reports') {
-            ChartService.updateAllCharts();
-            this.renderReportsTables();
+            // Activate the default summary report sub-tab
+            this.switchReportTab('summary');
         } else if (tabId === 'projects') {
             this.renderAllProjectsTable();
         } else if (tabId === 'dashboard') {

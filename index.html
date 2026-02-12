@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Tracking System</title>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+        crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+        crossorigin=""></script>
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.0/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
+
+    <link rel="stylesheet" href="css/main.css">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="auth-overlay" class="auth-overlay hidden">
+        <div class="auth-overlay-content">
+            <h2>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+                Authentication Required
+            </h2>
+            <p>Please log in to access the dashboard.</p>
+            <a href="login.html" class="btn">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                </svg>
+                Login to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <div id="dashboard-container" class="container">
+        <!-- Sidebar Navigation -->
+        <div class="sidebar">
+            <div class="logo">
+                <h1>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                    </svg>
+                    <span>Project Tracker</span>
+                </h1>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#" class="active" data-tab="dashboard">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+                    </svg>
+                    <span>Dashboard</span>
+                </a></li>
+                <li><a href="#" data-tab="projects">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                    </svg>
+                    <span>All Projects</span>
+                </a></li>
+                <li><a href="#" data-tab="manual-entry">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                    <span>Manual Entry</span>
+                </a></li>
+                <li><a href="#" data-tab="data-migration">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                    </svg>
+                    <span>Data Migration</span>
+                </a></li>
+                <li><a href="#" data-tab="reports">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                    <span>Reports</span>
+                </a></li>
+            </ul>
+            <div class="stats-summary">
+                <div class="stats-item">
+                    <span>Total Projects</span>
+                    <span id="total-projects">0</span>
+                </div>
+                <div class="stats-item">
+                    <span>Completed</span>
+                    <span id="completed-projects">0</span>
+                </div>
+                <div class="stats-item">
+                    <span>Pending</span>
+                    <span id="pending-projects">0</span>
+                </div>
+                <div class="stats-item">
+                    <span>Last Updated</span>
+                    <span id="last-updated">-</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <div class="header">
+                <h1>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                    </svg>
+                    Project Implementation Tracking System
+                </h1>
+                <div class="header-actions">
+                    <a href="landing.html" class="btn" style="text-decoration: none;">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                        </svg>
+                        Home
+                    </a>
+                    <button class="btn" id="export-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        Export Data
+                    </button>
+                    <button class="btn btn-secondary" id="refresh-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        Refresh
+                    </button>
+                    <button class="btn btn-accent" id="logout-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                        </svg>
+                        Logout
+                    </button>
+                </div>
+            </div>
+
+            <!-- Dashboard Tab -->
+            <div id="dashboard" class="tab-content active">
+                <div class="dashboard-grid">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                                </svg>
+                                Project Implementation Map
+                            </h2>
+                            <div class="header-actions">
+                                <button class="btn btn-secondary" id="filter-all">All Projects</button>
+                                <button class="btn" id="filter-done">Completed</button>
+                                <button class="btn btn-warning" id="filter-pending">Pending</button>
+                            </div>
+                        </div>
+                        <div id="map"></div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
+                                </svg>
+                                Project Status Overview
+                            </h2>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="status-chart"></canvas>
+                        </div>
+
+                        <div class="card-header" style="margin-top: 25px;">
+                            <h2>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                Implementation Timeline
+                            </h2>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="timeline-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                            </svg>
+                            Recent Projects
+                        </h2>
+                        <button class="btn btn-secondary" id="view-all-projects">View All Projects</button>
+                    </div>
+                    <div class="table-container">
+                        <table id="recent-projects-table">
+                            <thead>
+                                <tr>
+                                    <th>Site Code</th>
+                                    <th>Project Name</th>
+                                    <th>Site Name</th>
+                                    <th>Location</th>
+                                    <th>Date of Activation</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Projects Tab -->
+            <div id="projects" class="tab-content">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                            </svg>
+                            All Projects
+                        </h2>
+                        <div class="header-actions">
+                            <input type="text" id="search-projects" placeholder="Search projects..." style="padding: 10px 16px; border: 2px solid #E2E8F0; border-radius: 12px; width: 250px; font-family: 'Fira Sans', sans-serif;">
+                            <button class="btn" style="margin-left: 10px;" id="add-project-btn">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                </svg>
+                                Add New Project
+                            </button>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table id="projects-table">
+                            <thead>
+                                <tr>
+                                    <th>Site Code</th>
+                                    <th>Project Name</th>
+                                    <th>Site Name</th>
+                                    <th>Barangay</th>
+                                    <th>Municipality</th>
+                                    <th>Province</th>
+                                    <th>District</th>
+                                    <th>Coordinates</th>
+                                    <th>Date of Activation</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Manual Entry Tab -->
+            <div id="manual-entry" class="tab-content">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                            Manual Project Entry
+                        </h2>
+                    </div>
+                    <form id="manual-entry-form">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="site-code">Site Code *</label>
+                                <input type="text" id="site-code" required pattern="[A-Za-z0-9\-]+" title="Letters, numbers, and hyphens only">
+                            </div>
+                            <div class="form-group">
+                                <label for="project-name">Project Name *</label>
+                                <input type="text" id="project-name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="site-name">Site Name *</label>
+                                <input type="text" id="site-name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="barangay">Barangay *</label>
+                                <input type="text" id="barangay" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="municipality">Municipality *</label>
+                                <input type="text" id="municipality" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="province">Province *</label>
+                                <div class="autocomplete-wrapper">
+                                    <input type="text" id="province" required placeholder="Type to search provinces..." autocomplete="off">
+                                    <div class="suggestions-dropdown" id="province-suggestions"></div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="district">District *</label>
+                                <div class="autocomplete-wrapper">
+                                    <input type="text" id="district" required placeholder="Type to search districts..." autocomplete="off">
+                                    <div class="suggestions-dropdown" id="district-suggestions"></div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="latitude">Latitude * (-90 to 90)</label>
+                                <input type="number" id="latitude" step="0.000001" min="-90" max="90" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="longitude">Longitude * (-180 to 180)</label>
+                                <input type="number" id="longitude" step="0.000001" min="-180" max="180" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="activation-date">Date of Activation *</label>
+                                <input type="date" id="activation-date" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="status">Status *</label>
+                                <select id="status" required>
+                                    <option value="Done">Done</option>
+                                    <option value="Pending">Pending</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="notes">Notes</label>
+                            <textarea id="notes" rows="3" maxlength="1000"></textarea>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-accent" id="clear-form-btn">Clear Form</button>
+                            <button type="submit" class="btn">Submit Project</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            Auto-Correction Suggestions
+                        </h2>
+                    </div>
+                    <div style="padding: 20px; background: #F8FAFC; border-radius: 12px; margin-top: 12px; border: 1px solid #E2E8F0;">
+                        <p><strong>System will automatically suggest corrections for:</strong></p>
+                        <ul style="padding-left: 20px; margin-top: 12px; line-height: 2;">
+                            <li>Province/Municipality/Barangay name standardization</li>
+                            <li>Date format validation and correction</li>
+                            <li>Coordinate format validation</li>
+                            <li>Status value normalization</li>
+                            <li>Site code format validation</li>
+                        </ul>
+                        <p style="margin-top: 16px; font-style: italic; color: #64748B;">
+                            As you type in the form above, the system will provide real-time suggestions to ensure data consistency.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Data Migration Tab -->
+            <div id="data-migration" class="tab-content">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                            Import Projects from CSV/Excel
+                        </h2>
+                    </div>
+                    <div class="csv-import-container">
+                        <div class="drop-zone" id="drop-zone">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                            </svg>
+                            <h3 style="margin-top: 16px; font-size: 1.125rem;">Drag & Drop CSV/Excel File Here</h3>
+                            <p>or click to browse files</p>
+                            <input type="file" id="file-input" class="file-input" accept=".csv, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+                        </div>
+
+                        <div class="validation-results hidden" id="validation-results">
+                            <div class="validation-header">
+                                <h3>Validation Results</h3>
+                                <button class="btn btn-secondary" id="download-template">Download Template</button>
+                            </div>
+                            <div id="validation-messages">
+                            </div>
+                            <div style="margin-top: 16px;">
+                                <button class="btn" id="import-data-btn">Import Valid Data</button>
+                                <button class="btn btn-accent" id="download-errors-btn">Download Error Report</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top: 24px;">
+                    <div class="card-header">
+                        <h2>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                            </svg>
+                            Data Validation Rules
+                        </h2>
+                    </div>
+                    <div style="padding: 24px;">
+                        <h3 style="margin-bottom: 16px; color: var(--text); font-family: 'Fira Code', monospace;">The system checks for:</h3>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px;">
+                            <div>
+                                <h4 style="margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px; color: var(--success);">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    Required Fields
+                                </h4>
+                                <p style="color: var(--text-light);">All mandatory fields must be present and not empty</p>
+                            </div>
+                            <div>
+                                <h4 style="margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px; color: var(--success);">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    Data Format Validation
+                                </h4>
+                                <p style="color: var(--text-light);">Coordinates must be valid numbers, dates must follow standard format</p>
+                            </div>
+                            <div>
+                                <h4 style="margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px; color: var(--success);">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    Value Consistency
+                                </h4>
+                                <p style="color: var(--text-light);">Province, Municipality, Barangay values must be consistent with existing data</p>
+                            </div>
+                            <div>
+                                <h4 style="margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px; color: var(--success);">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    Duplicate Detection
+                                </h4>
+                                <p style="color: var(--text-light);">Site codes must be unique; duplicates will be flagged</p>
+                            </div>
+                            <div>
+                                <h4 style="margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px; color: var(--success);">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    Auto-correction
+                                </h4>
+                                <p style="color: var(--text-light);">Common errors like extra spaces, case inconsistencies will be automatically fixed</p>
+                            </div>
+                            <div>
+                                <h4 style="margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px; color: var(--success);">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    Status Validation
+                                </h4>
+                                <p style="color: var(--text-light);">Status values must be either "Done" or "Pending"</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reports Tab -->
+            <div id="reports" class="tab-content">
+                <div class="tabs">
+                    <div class="tab active" data-report="summary">Summary Report</div>
+                    <div class="tab" data-report="province">Province Analysis</div>
+                    <div class="tab" data-report="timeline">Timeline Report</div>
+                    <div class="tab" data-report="status">Status Report</div>
+                </div>
+
+                <div id="summary-report" class="tab-content active">
+                    <div class="report-filters">
+                        <div class="filter-group">
+                            <label>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                                </svg>
+                                Status:
+                            </label>
+                            <select id="summary-status-filter">
+                                <option value="all">All</option>
+                                <option value="Done">Completed</option>
+                                <option value="Pending">Pending</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                                </svg>
+                                Province:
+                            </label>
+                            <select id="summary-province-filter">
+                                <option value="all">All Provinces</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                Date Range:
+                            </label>
+                            <input type="date" id="summary-date-from" placeholder="From">
+                            <span>to</span>
+                            <input type="date" id="summary-date-to" placeholder="To">
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                Project Implementation Summary
+                            </h2>
+                            <button class="btn" id="generate-summary-pdf">Generate PDF Report</button>
+                        </div>
+                        <div style="padding: 20px;">
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 25px; margin-bottom: 30px;">
+                                <div style="background: white; padding: 20px; border-radius: var(--border-radius); box-shadow: var(--box-shadow); text-align: center;">
+                                    <h3 style="font-size: 2.5rem; color: var(--primary-color); margin-bottom: 10px;" id="report-total">0</h3>
+                                    <p style="color: #777; font-weight: 500;">Total Projects</p>
+                                </div>
+                                <div style="background: white; padding: 20px; border-radius: var(--border-radius); box-shadow: var(--box-shadow); text-align: center;">
+                                    <h3 style="font-size: 2.5rem; color: var(--secondary-color); margin-bottom: 10px;" id="report-completed">0</h3>
+                                    <p style="color: #777; font-weight: 500;">Completed Projects</p>
+                                </div>
+                                <div style="background: white; padding: 20px; border-radius: var(--border-radius); box-shadow: var(--box-shadow); text-align: center;">
+                                    <h3 style="font-size: 2.5rem; color: var(--warning-color); margin-bottom: 10px;" id="report-pending">0</h3>
+                                    <p style="color: #777; font-weight: 500;">Pending Projects</p>
+                                </div>
+                                <div style="background: white; padding: 20px; border-radius: var(--border-radius); box-shadow: var(--box-shadow); text-align: center;">
+                                    <h3 style="font-size: 2.5rem; color: var(--dark-color); margin-bottom: 10px;" id="report-provinces">0</h3>
+                                    <p style="color: #777; font-weight: 500;">Provinces Covered</p>
+                                </div>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-top: 20px;">
+                                <div class="card" style="margin-bottom: 0;">
+                                    <div class="card-header">
+                                        <h3>Projects by Province</h3>
+                                    </div>
+                                    <div class="chart-container">
+                                        <canvas id="province-chart"></canvas>
+                                    </div>
+                                </div>
+                                <div class="card" style="margin-bottom: 0;">
+                                    <div class="card-header">
+                                        <h3>Projects by Status</h3>
+                                    </div>
+                                    <div class="chart-container">
+                                        <canvas id="status-distribution-chart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="province-report" class="tab-content">
+                    <div class="report-filters">
+                        <div class="filter-group">
+                            <label>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                                </svg>
+                                Status:
+                            </label>
+                            <select id="province-status-filter">
+                                <option value="all">All</option>
+                                <option value="Done">Completed</option>
+                                <option value="Pending">Pending</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                                </svg>
+                                Province:
+                            </label>
+                            <select id="province-province-filter">
+                                <option value="all">All Provinces</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2><span>🏘️</span> Province Analysis Report</h2>
+                            <button class="btn" id="generate-province-pdf">Generate PDF Report</button>
+                        </div>
+                        <div style="padding: 20px;">
+                            <div class="chart-container">
+                                <canvas id="province-detailed-chart"></canvas>
+                            </div>
+
+                            <div style="margin-top: 30px;">
+                                <h3 style="margin-bottom: 15px; color: var(--dark-color);">Province Implementation Details</h3>
+                                <div class="table-container">
+                                    <table id="province-details-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Province</th>
+                                                <th>Total Projects</th>
+                                                <th>Completed</th>
+                                                <th>Pending</th>
+                                                <th>Completion Rate</th>
+                                                <th>First Implementation</th>
+                                                <th>Last Implementation</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="timeline-report" class="tab-content">
+                    <div class="report-filters">
+                        <div class="filter-group">
+                            <label>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                                </svg>
+                                Status:
+                            </label>
+                            <select id="timeline-status-filter">
+                                <option value="all">All</option>
+                                <option value="Done">Completed</option>
+                                <option value="Pending">Pending</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                Date Range:
+                            </label>
+                            <input type="date" id="timeline-date-from" placeholder="From">
+                            <span>to</span>
+                            <input type="date" id="timeline-date-to" placeholder="To">
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2><span>📅</span> Implementation Timeline Report</h2>
+                            <button class="btn" id="generate-timeline-pdf">Generate PDF Report</button>
+                        </div>
+                        <div style="padding: 20px;">
+                            <div class="chart-container">
+                                <canvas id="timeline-detailed-chart"></canvas>
+                            </div>
+
+                            <div style="margin-top: 30px;">
+                                <h3 style="margin-bottom: 15px; color: var(--dark-color);">Monthly Implementation Progress</h3>
+                                <div class="table-container">
+                                    <table id="timeline-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Month/Year</th>
+                                                <th>New Projects</th>
+                                                <th>Completed</th>
+                                                <th>Pending</th>
+                                                <th>Cumulative Total</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="status-report" class="tab-content">
+                    <div class="report-filters">
+                        <div class="filter-group">
+                            <label>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                                </svg>
+                                Province:
+                            </label>
+                            <select id="status-province-filter">
+                                <option value="all">All Provinces</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                Pending Duration:
+                            </label>
+                            <select id="status-duration-filter">
+                                <option value="all">All</option>
+                                <option value="30">Less than 30 days</option>
+                                <option value="60">Less than 60 days</option>
+                                <option value="90">Less than 90 days</option>
+                                <option value="90">90+ days</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2><span>✅</span> Status Analysis Report</h2>
+                            <button class="btn" id="generate-status-pdf">Generate PDF Report</button>
+                        </div>
+                        <div style="padding: 20px;">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-bottom: 30px;">
+                                <div class="card" style="margin-bottom: 0;">
+                                    <div class="card-header">
+                                        <h3>Pending Projects by Duration</h3>
+                                    </div>
+                                    <div class="chart-container">
+                                        <canvas id="pending-duration-chart"></canvas>
+                                    </div>
+                                </div>
+                                <div class="card" style="margin-bottom: 0;">
+                                    <div class="card-header">
+                                        <h3>Completion Rate by Province</h3>
+                                    </div>
+                                    <div class="chart-container">
+                                        <canvas id="completion-rate-chart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style="margin-top: 20px;">
+                                <h3 style="margin-bottom: 15px; color: var(--dark-color);">Pending Projects Requiring Attention</h3>
+                                <div class="table-container">
+                                    <table id="pending-projects-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Site Code</th>
+                                                <th>Project Name</th>
+                                                <th>Site Name</th>
+                                                <th>Location</th>
+                                                <th>Date of Activation</th>
+                                                <th>Pending Duration</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/utils/sanitizer.js"></script>
+    <script src="js/utils/validator.js"></script>
+    <script src="js/utils/debounce.js"></script>
+    <script src="js/services/dataService.js"></script>
+    <script src="js/services/mapService.js"></script>
+    <script src="js/services/chartService.js"></script>
+    <script src="js/services/uiService.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/auth.js"></script>
+</body>
+</html>

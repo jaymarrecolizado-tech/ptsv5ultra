@@ -59,7 +59,7 @@ try {
                 
                 sendJsonResponse(true, $stats);
             } else {
-                // Get all projects with filters
+                // Get all projects with filters and pagination
                 $where = [];
                 $params = [];
                 
@@ -89,14 +89,29 @@ try {
                     $params[] = $_GET['date_to'];
                 }
                 
+                // Get total count for pagination
+                $countSql = "SELECT COUNT(*) as total FROM projects";
+                if (!empty($where)) {
+                    $countSql .= " WHERE " . implode(" AND ", $where);
+                }
+                $countStmt = $db->prepare($countSql);
+                $countStmt->execute($params);
+                $totalCount = (int)$countStmt->fetch()['total'];
+                
+                // Pagination
+                $page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
+                $perPage = isset($_GET['per_page']) ? max(1, min(100, (int)$_GET['per_page'])) : 25;
+                $offset = ($page - 1) * $perPage;
+                
+                // Get paginated projects
                 $sql = "SELECT * FROM projects";
                 if (!empty($where)) {
                     $sql .= " WHERE " . implode(" AND ", $where);
                 }
-                $sql .= " ORDER BY created_at DESC";
+                $sql .= " ORDER BY created_at DESC LIMIT ? OFFSET ?";
                 
                 $stmt = $db->prepare($sql);
-                $stmt->execute($params);
+                $stmt->execute(array_merge($params, [$perPage, $offset]));
                 $projects = $stmt->fetchAll();
                 
                 // Format dates and coordinates
@@ -107,7 +122,20 @@ try {
                     $project['longitude'] = number_format((float)$project['longitude'], 6, '.', '');
                 }
                 
-                sendJsonResponse(true, $projects);
+                // Calculate pagination info
+                $totalPages = (int)ceil($totalCount / $perPage);
+                
+                sendJsonResponse(true, [
+                    'projects' => $projects,
+                    'pagination' => [
+                        'current_page' => $page,
+                        'per_page' => $perPage,
+                        'total_count' => $totalCount,
+                        'total_pages' => $totalPages,
+                        'has_next' => $page < $totalPages,
+                        'has_prev' => $page > 1
+                    ]
+                ]);
             }
             break;
             

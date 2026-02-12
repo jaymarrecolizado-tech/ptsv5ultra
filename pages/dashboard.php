@@ -109,6 +109,46 @@ require_once __DIR__ . '/../includes/header.php';
             <div class="mb-4">
                 <h3 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
                     <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
+                    </svg>
+                    Map Filters
+                </h3>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Filter by Province</label>
+                    <select id="map-filter-province" onchange="applyMapFilters()" 
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                        <option value="all">All Provinces</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Filter by Status</label>
+                    <div class="flex gap-2">
+                        <button onclick="setMapStatusFilter('all')" id="btn-status-all" class="flex-1 px-3 py-2 text-sm bg-gray-200 hover:bg-gray-300 rounded transition-colors font-medium">All</button>
+                        <button onclick="setMapStatusFilter('Done')" id="btn-status-done" class="flex-1 px-3 py-2 text-sm bg-green-100 hover:bg-green-200 text-green-800 rounded transition-colors">Done</button>
+                        <button onclick="setMapStatusFilter('Pending')" id="btn-status-pending" class="flex-1 px-3 py-2 text-sm bg-orange-100 hover:bg-orange-200 text-orange-800 rounded transition-colors">Pending</button>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Filter by Project</label>
+                    <select id="map-filter-project" onchange="applyMapFilters()" 
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                        <option value="all">All Projects</option>
+                    </select>
+                </div>
+                <button onclick="resetMapFilters()" class="w-full px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors text-sm font-medium">
+                    Reset Filters
+                </button>
+                <div class="pt-4 border-t border-gray-200">
+                    <p class="text-sm text-gray-600">
+                        <span id="map-filtered-count" class="font-bold text-blue-600">0</span> projects shown
+                    </p>
+                </div>
+            </div>
+            <div class="mb-4">
+                <h3 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/>
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"/>
                     </svg>
@@ -261,7 +301,109 @@ async function loadActivityFeed() {
 }
 
 // Load activity on page load
-document.addEventListener('DOMContentLoaded', loadActivityFeed);
+document.addEventListener('DOMContentLoaded', function() {
+    loadActivityFeed();
+    loadMapFilterOptions();
+});
+
+// Map filter state
+let mapFilters = {
+    province: 'all',
+    status: 'all',
+    project: 'all'
+};
+
+// Load filter options for map
+async function loadMapFilterOptions() {
+    try {
+        // Load provinces
+        const response = await fetch('/projects/newPTS/api/locations.php?type=provinces');
+        const data = await response.json();
+        if (data.success) {
+            const select = document.getElementById('map-filter-province');
+            data.data.provinces.forEach(p => {
+                const option = document.createElement('option');
+                option.value = p.province;
+                option.textContent = `${p.province} (${p.project_count})`;
+                select.appendChild(option);
+            });
+        }
+        
+        // Load unique projects
+        const projectsResponse = await fetch('/projects/newPTS/api/projects.php');
+        const projectsData = await projectsResponse.json();
+        if (projectsData.success) {
+            const uniqueProjects = [...new Set(projectsData.data.map(p => p.project_name))];
+            const projectSelect = document.getElementById('map-filter-project');
+            uniqueProjects.forEach(projectName => {
+                const option = document.createElement('option');
+                option.value = projectName;
+                option.textContent = projectName;
+                projectSelect.appendChild(option);
+            });
+        }
+    } catch (error) {
+        console.error('Failed to load map filters:', error);
+    }
+}
+
+// Set status filter
+function setMapStatusFilter(status) {
+    mapFilters.status = status;
+    
+    // Update button styles
+    document.getElementById('btn-status-all').className = status === 'all' 
+        ? 'flex-1 px-3 py-2 text-sm bg-gray-600 text-white rounded transition-colors font-medium' 
+        : 'flex-1 px-3 py-2 text-sm bg-gray-200 hover:bg-gray-300 rounded transition-colors';
+    document.getElementById('btn-status-done').className = status === 'Done' 
+        ? 'flex-1 px-3 py-2 text-sm bg-green-600 text-white rounded transition-colors font-medium' 
+        : 'flex-1 px-3 py-2 text-sm bg-green-100 hover:bg-green-200 text-green-800 rounded transition-colors';
+    document.getElementById('btn-status-pending').className = status === 'Pending' 
+        ? 'flex-1 px-3 py-2 text-sm bg-orange-600 text-white rounded transition-colors font-medium' 
+        : 'flex-1 px-3 py-2 text-sm bg-orange-100 hover:bg-orange-200 text-orange-800 rounded transition-colors';
+    
+    applyMapFilters();
+}
+
+// Apply all map filters
+async function applyMapFilters() {
+    mapFilters.province = document.getElementById('map-filter-province').value;
+    mapFilters.project = document.getElementById('map-filter-project').value;
+    
+    const params = new URLSearchParams();
+    if (mapFilters.province !== 'all') params.append('province', mapFilters.province);
+    if (mapFilters.status !== 'all') params.append('status', mapFilters.status);
+    
+    try {
+        const response = await fetch(`/projects/newPTS/api/projects.php?${params}`);
+        const data = await response.json();
+        
+        if (data.success) {
+            // Filter by project name if selected
+            let filtered = data.data;
+            if (mapFilters.project !== 'all') {
+                filtered = filtered.filter(p => p.project_name === mapFilters.project);
+            }
+            
+            // Update map
+            MapService.addMarkers(filtered);
+            
+            // Update count
+            document.getElementById('map-filtered-count').textContent = filtered.length;
+        }
+    } catch (error) {
+        console.error('Failed to apply filters:', error);
+    }
+}
+
+// Reset all map filters
+function resetMapFilters() {
+    document.getElementById('map-filter-province').value = 'all';
+    document.getElementById('map-filter-project').value = 'all';
+    mapFilters = { province: 'all', status: 'all', project: 'all' };
+    setMapStatusFilter('all');
+    MapService.loadProjects();
+}
 </script>
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>

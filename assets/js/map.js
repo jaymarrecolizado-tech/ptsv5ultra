@@ -303,7 +303,9 @@ const MapService = {
             
             const response = await API.projects.getAll(filters);
             if (response.success && response.data) {
-                this.addMarkers(response.data);
+                // Handle both paginated format (response.data.projects) and old format (response.data array)
+                const projects = Array.isArray(response.data) ? response.data : (response.data.projects || []);
+                this.addMarkers(projects);
             }
         } catch (error) {
             console.error('Failed to load projects:', error);

@@ -330,10 +330,12 @@ async function loadMapFilterOptions() {
         }
         
         // Load unique projects
-        const projectsResponse = await fetch('/projects/newPTS/api/projects.php');
+        const projectsResponse = await fetch('/projects/newPTS/api/projects.php?per_page=1000');
         const projectsData = await projectsResponse.json();
         if (projectsData.success) {
-            const uniqueProjects = [...new Set(projectsData.data.map(p => p.project_name))];
+            // Handle paginated response format
+            const projects = projectsData.data.projects || projectsData.data || [];
+            const uniqueProjects = [...new Set(projects.map(p => p.project_name))];
             const projectSelect = document.getElementById('map-filter-project');
             uniqueProjects.forEach(projectName => {
                 const option = document.createElement('option');
@@ -373,14 +375,17 @@ async function applyMapFilters() {
     const params = new URLSearchParams();
     if (mapFilters.province !== 'all') params.append('province', mapFilters.province);
     if (mapFilters.status !== 'all') params.append('status', mapFilters.status);
+    params.append('per_page', '1000'); // Load all for map display
     
     try {
         const response = await fetch(`/projects/newPTS/api/projects.php?${params}`);
         const data = await response.json();
         
         if (data.success) {
+            // Handle paginated response - extract projects array
+            let filtered = data.data.projects || data.data || [];
+            
             // Filter by project name if selected
-            let filtered = data.data;
             if (mapFilters.project !== 'all') {
                 filtered = filtered.filter(p => p.project_name === mapFilters.project);
             }

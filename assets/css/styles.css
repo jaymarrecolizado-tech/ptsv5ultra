@@ -1,0 +1,221 @@
+/**
+ * Custom Styles
+ */
+
+/* Map Styles */
+#map {
+    width: 100%;
+    height: 100%;
+    min-height: 400px;
+}
+
+/* Project Legend Styles */
+#project-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    max-width: 600px;
+}
+
+#project-legend > div {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Coordinate Input Styles */
+input[type="number"].font-mono {
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    letter-spacing: 0.5px;
+}
+
+/* Coordinate Picker Map */
+#coordinate-map {
+    z-index: 1;
+}
+
+#coordinate-map .leaflet-marker-icon {
+    transition: transform 0.2s ease;
+}
+
+#coordinate-map .leaflet-marker-icon:hover {
+    transform: scale(1.2);
+}
+
+/* Custom Marker Styles */
+.custom-marker {
+    background: transparent !important;
+    border: none !important;
+}
+
+.custom-marker div {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.custom-marker:hover div {
+    transform: scale(1.3) !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5) !important;
+    z-index: 1000;
+}
+
+/* Marker Cluster Styles */
+.marker-cluster {
+    background: transparent !important;
+    border: none !important;
+}
+
+.marker-cluster div {
+    transition: transform 0.2s ease;
+}
+
+.marker-cluster:hover div {
+    transform: scale(1.1);
+}
+
+/* Custom Marker Styles */
+.custom-marker {
+    background: transparent !important;
+    border: none !important;
+}
+
+/* Table Styles */
+table {
+    border-collapse: collapse;
+}
+
+th {
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Status Badges */
+.status-done {
+    background-color: #10B981;
+    color: white;
+}
+
+.status-pending {
+    background-color: #F97316;
+    color: white;
+}
+
+/* Form Styles */
+input:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Scrollbar Styles */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #a1a1a1;
+}
+
+/* Loading Spinner */
+.loading-spinner {
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #3B82F6;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Animation Classes */
+.fade-in {
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Drop Zone Styles */
+#drop-zone {
+    transition: all 0.3s ease;
+}
+
+#drop-zone:hover {
+    border-color: #3B82F6;
+    background-color: #EFF6FF;
+}
+
+/* Suggestions Dropdown */
+.suggestions-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #E5E7EB;
+    border-radius: 0.5rem;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    z-index: 50;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+/* Chart Containers */
+.chart-container {
+    position: relative;
+    height: 100%;
+    width: 100%;
+}
+
+/* Report Tabs */
+.report-tab {
+    transition: all 0.2s ease;
+}
+
+.report-tab:hover {
+    transform: translateY(-1px);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .sidebar {
+        position: fixed;
+        left: -100%;
+        transition: left 0.3s ease;
+        z-index: 50;
+    }
+    
+    .sidebar.open {
+        left: 0;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .sidebar,
+    .header-actions,
+    .btn {
+        display: none !important;
+    }
+    
+    .main-content {
+        margin-left: 0 !important;
+    }
+}

@@ -12,6 +12,11 @@ requireAuth();
 
 $method = $_SERVER['REQUEST_METHOD'];
 
+// Require CSRF validation for state-changing operations
+if (in_array($method, ['POST', 'PUT', 'DELETE'])) {
+    requireCsrfToken();
+}
+
 try {
     $db = getDB();
     

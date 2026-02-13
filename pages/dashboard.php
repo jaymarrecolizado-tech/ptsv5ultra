@@ -185,7 +185,7 @@ require_once __DIR__ . '/../includes/header.php';
         </div>
         <div class="overflow-x-auto">
             <table class="w-full">
-                <thead class="bg-gray-50">
+<thead class="bg-gray-50">
                     <tr>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Site Code</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Project Name</th>
@@ -193,6 +193,7 @@ require_once __DIR__ . '/../includes/header.php';
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Location</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Encoded By</th>
                     </tr>
                 </thead>
                 <tbody id="recent-projects-body" class="divide-y divide-gray-200">

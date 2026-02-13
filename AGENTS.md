@@ -1,6 +1,56 @@
 # Project Implementation Tracking System - Agent Guide
 
-This is a single-file web application for tracking and visualizing project implementations across the Philippines with geospatial data.
+**⚠️ CONTEXT UPDATE:** This project has evolved from a single-file HTML app to a full PHP/MySQL web application with multi-project type support.
+
+**Current Implementation:** PHP/MySQL Application with 10 project types
+**Previous Version:** Single-file HTML/JS (index.html) - See end of document for old reference
+
+---
+
+## New Multi-Project Type System (Active Development)
+
+### Overview
+The system now supports **10 different DICT project types**, each with unique fields, validation rules, and reporting requirements:
+
+1. **EgovPH** - eGovernment Philippines platform
+2. **ELGU** - eLocal Government Unit digitalization
+3. **Free-WiFi for All** - Public WiFi infrastructure
+4. **Cybersecurity** - Awareness and training programs
+5. **ILCDB** - ICT Literacy and Competency Development
+6. **GovNet** - Government Network infrastructure
+7. **IIDB** - ICT Industry Development
+8. **DTC** - Digital Transformation Center
+9. **GECS** - Government Emergency Communications
+10. **PNPKI** - Digital certificates (simplified)
+
+### Key Documents
+- `IMPLEMENTATION_SPEC.md` - Complete technical specification
+- `PROJECT_TYPES_QUICKREF.md` - Quick reference guide
+- `PROJECT_TYPE_IMPORT_GUIDE.md` - Import documentation
+- `config/project_types.php` - Project type configurations
+
+### Database Schema
+- **projects** - Main project records with JSON custom_data
+- **daily_metrics** - Free-WiFi daily bandwidth/utilization
+- **activities** - Training events and activities
+- **project_type_fields** - Dynamic field definitions
+- **import_templates** - CSV templates per type
+
+### Priority Implementation
+**Phase 1 (Current):** EgovPH, ELGU, Free-WiFi
+**Phase 2 (Next):** Remaining 7 types
+
+### Files Already Created
+✅ Configuration and API files ready for Phase 1
+✅ Database migration script prepared
+✅ Import/Report APIs built
+✅ UI pages created
+
+---
+
+## Original Single-File Application (Reference Only)
+
+The following documentation is for the original standalone HTML/JS version:
 
 ## Project Overview
 

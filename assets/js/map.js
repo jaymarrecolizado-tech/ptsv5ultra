@@ -78,8 +78,9 @@ const MapService = {
         const container = document.getElementById(containerId);
         if (!container) return null;
         
-        // Initialize map centered on Philippines
-        this.map = L.map(containerId).setView([17.0, 121.0], 6);
+        // Initialize map centered on Region 2 (Cagayan Valley) where all projects are located
+        // Calculated center: 18.26, 121.77 based on all 97 project coordinates
+        this.map = L.map(containerId).setView([18.26, 121.77], 7);
         
         // Add default tile layer
         this.setTileLayer('standard');
@@ -257,6 +258,8 @@ const MapService = {
         this.markerClusterGroup.addLayers(markers);
         this.markers = markers;
         
+        console.log(`Map: Added ${markers.length} markers to map`);
+        
         // Fit bounds if we have markers with better precision
         if (markers.length > 0) {
             const group = new L.featureGroup(markers);
@@ -301,10 +304,11 @@ const MapService = {
                 filters.status = this.currentFilter;
             }
             
-            const response = await API.projects.getAll(filters);
+            const response = await API.projects.getAllForMap(filters);
             if (response.success && response.data) {
                 // Handle both paginated format (response.data.projects) and old format (response.data array)
                 const projects = Array.isArray(response.data) ? response.data : (response.data.projects || []);
+                console.log(`Map: Loaded ${projects.length} projects`);
                 this.addMarkers(projects);
             }
         } catch (error) {

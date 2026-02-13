@@ -3,7 +3,9 @@
  * Authentication functions
  */
 
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 require_once __DIR__ . '/../config/database.php';
 
 /**
@@ -20,6 +22,7 @@ function requireAuth() {
     if (!isLoggedIn()) {
         if (isApiRequest()) {
             sendJsonResponse(false, null, 'Authentication required', []);
+            exit;
         } else {
             header('Location: ../index.php');
             exit;
@@ -64,8 +67,15 @@ function login($username, $password) {
  * Logout user
  */
 function logout() {
-    session_destroy();
     $_SESSION = [];
+    if (ini_get("session.use_cookies")) {
+        $params = session_get_cookie_params();
+        setcookie(session_name(), '', time() - 42000,
+            $params["path"], $params["domain"],
+            $params["secure"], $params["httponly"]
+        );
+    }
+    session_destroy();
 }
 
 /**
@@ -106,4 +116,19 @@ function generateCsrfToken() {
  */
 function validateCsrfToken($token) {
     return isset($_SESSION['csrf_token']) && hash_equals($_SESSION['csrf_token'], $token);
+}
+
+/**
+ * Require CSRF token validation for state-changing operations
+ */
+function requireCsrfToken() {
+    $csrfToken = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
+    if (!validateCsrfToken($csrfToken)) {
+        if (isApiRequest()) {
+            sendJsonResponse(false, null, 'Invalid CSRF token', []);
+            exit;
+        } else {
+            die('CSRF token validation failed');
+        }
+    }
 }

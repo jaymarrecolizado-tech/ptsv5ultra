@@ -9,12 +9,22 @@ require_once __DIR__ . '/../includes/header.php';
 
 $projectId = isset($_GET['id']) ? (int)$_GET['id'] : null;
 $project = null;
+$creator = null;
+$updater = null;
 
 if ($projectId) {
-    // Fetch project for editing
+    // Fetch project for editing with creator/updater info
     try {
         $db = getDB();
-        $stmt = $db->prepare("SELECT * FROM projects WHERE id = ?");
+        $stmt = $db->prepare("
+            SELECT p.*, 
+                   u1.username as created_by_name,
+                   u2.username as updated_by_name
+            FROM projects p
+            LEFT JOIN users u1 ON p.created_by = u1.id
+            LEFT JOIN users u2 ON p.updated_by = u2.id
+            WHERE p.id = ?
+        ");
         $stmt->execute([$projectId]);
         $project = $stmt->fetch();
         
@@ -162,7 +172,7 @@ if ($projectId) {
                           placeholder="Optional notes..."><?php echo $project ? htmlspecialchars($project['notes']) : ''; ?></textarea>
             </div>
             
-            <div class="flex justify-end gap-3 pt-4 border-t border-gray-200">
+<div class="flex justify-end gap-3 pt-4 border-t border-gray-200">
                 <a href="./pages/projects.php" 
                    class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
                     Cancel
@@ -173,6 +183,35 @@ if ($projectId) {
                 </button>
             </div>
         </form>
+        
+        <!-- Transparency Info - Who entered/updated -->
+        <?php if ($project): ?>
+        <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
+            <h4 class="text-sm font-medium text-gray-700 mb-2">Data Entry Information</h4>
+            <div class="grid grid-cols-2 gap-4 text-sm text-gray-600">
+                <div>
+                    <span class="text-gray-500">Created by:</span>
+                    <span class="font-medium text-gray-800 ml-2">
+                        <?php echo htmlspecialchars($project['created_by_name'] ?? 'System'); ?>
+                    </span>
+                    <span class="text-gray-400 ml-2">
+                        <?php echo $project['created_at'] ? date('M d, Y h:i A', strtotime($project['created_at'])) : ''; ?>
+                    </span>
+                </div>
+                <?php if ($project['updated_by_name']): ?>
+                <div>
+                    <span class="text-gray-500">Last updated by:</span>
+                    <span class="font-medium text-gray-800 ml-2">
+                        <?php echo htmlspecialchars($project['updated_by_name']); ?>
+                    </span>
+                    <span class="text-gray-400 ml-2">
+                        <?php echo $project['updated_at'] ? date('M d, Y h:i A', strtotime($project['updated_at'])) : ''; ?>
+                    </span>
+                </div>
+                <?php endif; ?>
+            </div>
+        </div>
+        <?php endif; ?>
     </div>
     
     <!-- Auto-correction Info -->

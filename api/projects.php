@@ -14,6 +14,11 @@ requireAuth();
 
 $method = $_SERVER['REQUEST_METHOD'];
 
+// Require CSRF validation for state-changing operations
+if (in_array($method, ['POST', 'PUT', 'DELETE'])) {
+    requireCsrfToken();
+}
+
 try {
     $db = getDB();
     
@@ -58,6 +63,11 @@ try {
                 $stats['provinces'] = (int)$result->fetch()['count'];
                 
                 sendJsonResponse(true, $stats);
+            } elseif (isset($_GET['action']) && $_GET['action'] === 'project_types') {
+                // Get all unique project types
+                $result = $db->query("SELECT DISTINCT project_type FROM projects WHERE project_type IS NOT NULL AND project_type != '' ORDER BY project_type");
+                $types = $result->fetchAll(PDO::FETCH_COLUMN);
+                sendJsonResponse(true, $types);
             } else {
                 // Get all projects with filters and pagination
                 $where = [];
@@ -73,9 +83,15 @@ try {
                     $params[] = $_GET['province'];
                 }
                 
+                if (!empty($_GET['project_type']) && $_GET['project_type'] !== 'all') {
+                    $where[] = "project_type = ?";
+                    $params[] = $_GET['project_type'];
+                }
+                
                 if (!empty($_GET['search'])) {
                     $where[] = "(site_code LIKE ? OR project_name LIKE ? OR site_name LIKE ? OR barangay LIKE ? OR municipality LIKE ?)";
-                    $search = "%{$_GET['search']}%";
+                    // Escape LIKE wildcards to prevent injection
+                    $search = '%' . addcslashes($_GET['search'], '%_') . '%';
                     $params = array_merge($params, [$search, $search, $search, $search, $search]);
                 }
                 
@@ -103,12 +119,14 @@ try {
                 $perPage = isset($_GET['per_page']) ? max(1, min(100, (int)$_GET['per_page'])) : 25;
                 $offset = ($page - 1) * $perPage;
                 
-                // Get paginated projects
-                $sql = "SELECT * FROM projects";
+// Get paginated projects with encoder info
+                $sql = "SELECT p.*, u.username as created_by_name 
+                        FROM projects p 
+                        LEFT JOIN users u ON p.created_by = u.id";
                 if (!empty($where)) {
                     $sql .= " WHERE " . implode(" AND ", $where);
                 }
-                $sql .= " ORDER BY created_at DESC LIMIT ? OFFSET ?";
+                $sql .= " ORDER BY p.created_at DESC LIMIT ? OFFSET ?";
                 
                 $stmt = $db->prepare($sql);
                 $stmt->execute(array_merge($params, [$perPage, $offset]));
@@ -184,7 +202,14 @@ try {
             $district = standardizeLocation($data['district']);
             $latitude = (float)$data['latitude'];
             $longitude = (float)$data['longitude'];
-            $activationDate = $data['activation_date'];
+            
+            // Validate and parse activation_date
+            $parsedDate = parseDate($data['activation_date']);
+            if (!$parsedDate) {
+                sendJsonResponse(false, null, 'Invalid activation date format. Use YYYY-MM-DD');
+            }
+            $activationDate = $parsedDate;
+            
             $status = normalizeStatus($data['status']);
             $notes = !empty($data['notes']) ? sanitize($data['notes']) : '';
             
@@ -268,10 +293,14 @@ try {
                 sendJsonResponse(false, null, 'No fields to update', []);
             }
             
-            // Get old values before update
+// Get old values before update
             $stmt = $db->prepare("SELECT * FROM projects WHERE id = ?");
             $stmt->execute([$id]);
             $oldProject = $stmt->fetch();
+            
+            $fields[] = "updated_by = ?";
+            $params[] = $_SESSION['user_id'];
+            // Note: updated_at is auto-updated by MySQL ON UPDATE CURRENT_TIMESTAMP
             
             $params[] = $id;
             $sql = "UPDATE projects SET " . implode(", ", $fields) . " WHERE id = ?";

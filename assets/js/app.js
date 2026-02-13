@@ -126,22 +126,27 @@ async function loadDashboardCharts() {
  */
 async function loadRecentProjects() {
     try {
-        const response = await API.projects.getAll({ limit: 5 });
+        const response = await API.projects.getAll({ limit: 5, per_page: 5 });
         if (response.success && response.data) {
             const tbody = document.getElementById('recent-projects-body');
             if (!tbody) return;
             
-            tbody.innerHTML = response.data.slice(0, 5).map(project => `
+            const projects = response.data.projects || response.data;
+            
+            tbody.innerHTML = projects.slice(0, 5).map(project => `
                 <tr class="hover:bg-gray-50">
-                    <td class="px-4 py-3 text-sm text-gray-900">${project.site_code}</td>
-                    <td class="px-4 py-3 text-sm text-gray-900">${project.project_name}</td>
-                    <td class="px-4 py-3 text-sm text-gray-900">${project.site_name}</td>
-                    <td class="px-4 py-3 text-sm text-gray-500">${project.municipality}, ${project.province}</td>
-                    <td class="px-4 py-3 text-sm text-gray-500">${project.activation_date_formatted}</td>
+                    <td class="px-4 py-3 text-sm text-gray-900">${project.site_code || ''}</td>
+                    <td class="px-4 py-3 text-sm text-gray-900">${project.project_name || ''}</td>
+                    <td class="px-4 py-3 text-sm text-gray-900">${project.site_name || ''}</td>
+                    <td class="px-4 py-3 text-sm text-gray-500">${project.municipality || ''}, ${project.province || ''}</td>
+                    <td class="px-4 py-3 text-sm text-gray-500">${project.activation_date_formatted || ''}</td>
                     <td class="px-4 py-3">
                         <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${project.status === 'Done' ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800'}">
-                            ${project.status}
+                            ${project.status || 'Pending'}
                         </span>
+                    </td>
+                    <td class="px-4 py-3 text-sm text-gray-600">
+                        <span class="font-medium">${project.created_by_name || 'System'}</span>
                     </td>
                 </tr>
             `).join('');
@@ -187,17 +192,20 @@ async function loadProjectsTable() {
         const status = document.getElementById('status-filter')?.value || 'all';
         const province = document.getElementById('province-filter')?.value || 'all';
         
-        const filters = {};
+        const filters = { page: 1, per_page: 25 };
         if (search) filters.search = search;
         if (status !== 'all') filters.status = status;
         if (province !== 'all') filters.province = province;
         
         const response = await API.projects.getAll(filters);
         if (response.success && response.data) {
+            const projects = response.data.projects || response.data;
+            const pagination = response.data.pagination || { total_count: projects.length, current_page: 1, total_pages: 1 };
+            
             const tbody = document.getElementById('projects-body');
             if (!tbody) return;
             
-            if (response.data.length === 0) {
+            if (projects.length === 0) {
                 tbody.innerHTML = `
                     <tr>
                         <td colspan="11" class="px-4 py-8 text-center text-gray-500">
@@ -206,25 +214,25 @@ async function loadProjectsTable() {
                     </tr>
                 `;
             } else {
-                tbody.innerHTML = response.data.map(project => `
+                tbody.innerHTML = projects.map(project => `
                     <tr class="hover:bg-gray-50">
                         <td class="px-4 py-3 text-sm text-gray-900 font-medium">${project.site_code}</td>
                         <td class="px-4 py-3 text-sm text-gray-900">${project.project_name}</td>
                         <td class="px-4 py-3 text-sm text-gray-900">${project.site_name}</td>
-                        <td class="px-4 py-3 text-sm text-gray-500">${project.barangay}</td>
-                        <td class="px-4 py-3 text-sm text-gray-500">${project.municipality}</td>
-                        <td class="px-4 py-3 text-sm text-gray-500">${project.province}</td>
-                        <td class="px-4 py-3 text-sm text-gray-500">${project.district}</td>
-                        <td class="px-4 py-3 text-sm text-gray-500 font-mono text-xs">${parseFloat(project.latitude).toFixed(4)}, ${parseFloat(project.longitude).toFixed(4)}</td>
-                        <td class="px-4 py-3 text-sm text-gray-500">${project.activation_date_formatted}</td>
+                        <td class="px-4 py-3 text-sm text-gray-500">${project.barangay || ''}</td>
+                        <td class="px-4 py-3 text-sm text-gray-500">${project.municipality || ''}</td>
+                        <td class="px-4 py-3 text-sm text-gray-500">${project.province || ''}</td>
+                        <td class="px-4 py-3 text-sm text-gray-500">${project.district || ''}</td>
+                        <td class="px-4 py-3 text-sm text-gray-500 font-mono text-xs">${parseFloat(project.latitude || 0).toFixed(4)}, ${parseFloat(project.longitude || 0).toFixed(4)}</td>
+                        <td class="px-4 py-3 text-sm text-gray-500">${project.activation_date_formatted || ''}</td>
                         <td class="px-4 py-3">
                             <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${project.status === 'Done' ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800'}">
-                                ${project.status}
+                                ${project.status || 'Pending'}
                             </span>
                         </td>
                         <td class="px-4 py-3">
                             <div class="flex gap-2">
-                                <a href="../pages/project-form.php?id=${project.id}" 
+                                <a href="./pages/project-form.php?id=${project.id}" 
                                    class="text-blue-600 hover:text-blue-800 text-sm font-medium">Edit</a>
                                 <button onclick="deleteProject(${project.id})" 
                                         class="text-red-600 hover:text-red-800 text-sm font-medium">Delete</button>
@@ -237,7 +245,7 @@ async function loadProjectsTable() {
             // Update count
             const countEl = document.getElementById('projects-count');
             if (countEl) {
-                countEl.textContent = `Showing ${response.data.length} projects`;
+                countEl.textContent = `Showing ${projects.length} of ${pagination.total_count} projects`;
             }
         }
     } catch (error) {
@@ -247,7 +255,7 @@ async function loadProjectsTable() {
             tbody.innerHTML = `
                 <tr>
                     <td colspan="11" class="px-4 py-8 text-center text-red-500">
-                        Failed to load projects. Please try again.
+                        Failed to load projects: ${error.message}
                     </td>
                 </tr>
             `;

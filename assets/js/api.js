@@ -4,6 +4,7 @@
 
 const API = {
     baseUrl: '../api',
+    csrfToken: '',
     
     /**
      * Make API request
@@ -11,11 +12,19 @@ const API = {
     async request(endpoint, options = {}) {
         const url = `${this.baseUrl}${endpoint}`;
         
+        const headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        };
+        
+        // Add CSRF token for state-changing operations
+        const csrfToken = window.csrfToken || '';
+        if ((options.method === 'POST' || options.method === 'PUT' || options.method === 'DELETE') && csrfToken) {
+            headers['X-CSRF-Token'] = csrfToken;
+        }
+        
         const defaultOptions = {
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            }
+            headers: headers
         };
         
         const response = await fetch(url, { ...defaultOptions, ...options });
@@ -87,6 +96,10 @@ const API = {
         getAll: (filters = {}) => {
             const params = new URLSearchParams(filters);
             return API.get(`/projects.php?${params}`);
+        },
+        getAllForMap: () => {
+            // Get all projects without pagination for map display
+            return API.get('/projects.php?per_page=1000');
         },
         get: (id) => API.get(`/projects.php?id=${id}`),
         getStats: () => API.get('/projects.php?action=stats'),

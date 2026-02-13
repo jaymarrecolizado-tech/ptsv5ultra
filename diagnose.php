@@ -1,9 +1,29 @@
 <?php
 /**
  * Login Diagnostic & Fix Tool
+ * 
+ * SECURITY: This file should be deleted or protected in production!
+ * For now, we'll require authentication to access it.
  */
 
 require_once __DIR__ . '/config/database.php';
+require_once __DIR__ . '/includes/functions.php';
+require_once __DIR__ . '/includes/auth.php';
+
+// Check authentication - only allow logged-in users
+if (!isLoggedIn()) {
+    die('Authentication required. Please <a href="index.php">login</a> first.');
+}
+
+// Check admin role - only admins can run diagnostics
+if (!isAdmin()) {
+    die('Access denied. Admin privileges required.');
+}
+
+// Only allow access in development environment
+if (!in_array($_SERVER['REMOTE_ADDR'], ['127.0.0.1', '::1', 'localhost'])) {
+    die('This diagnostic tool is only accessible from localhost in development.');
+}
 
 $message = '';
 $error = '';
@@ -48,12 +68,17 @@ try {
     } else {
         $message .= "✅ Admin user exists (ID: {$admin['id']})<br>";
         
-        // Reset password to ensure it's correct
-        $passwordHash = password_hash('admin123', PASSWORD_DEFAULT);
-        $stmt = $db->prepare("UPDATE users SET password_hash = ? WHERE username = 'admin'");
-        $stmt->execute([$passwordHash]);
-        
-        $message .= "✅ Admin password reset to: admin123<br>";
+        // Only reset password if explicitly requested via GET parameter with confirmation
+        if (isset($_GET['reset_password']) && $_GET['reset_password'] === 'confirm') {
+            $passwordHash = password_hash('admin123', PASSWORD_DEFAULT);
+            $stmt = $db->prepare("UPDATE users SET password_hash = ? WHERE username = 'admin'");
+            $stmt->execute([$passwordHash]);
+            $message .= "✅ Admin password reset to: admin123<br>";
+        } elseif (isset($_GET['reset_password'])) {
+            $message .= "⚠️ Use ?reset_password=confirm to confirm reset<br>";
+        } else {
+            $message .= "ℹ️ Password unchanged (add ?reset_password=confirm to reset)<br>";
+        }
     }
     
     // Test password verification
@@ -84,7 +109,7 @@ try {
     // Check for projects table
     $stmt = $db->query("SHOW TABLES LIKE 'projects'");
     if ($stmt->rowCount() === 0) {
-        $error .= "❌ Projects table does not exist! Please run: http://localhost/projects/newPTS/setup.php<br>";
+        $error .= "❌ Projects table does not exist! Please run: http://localhost/Projects/ptsUltra/ptsv5ultra/setup.php<br>";
     } else {
         $message .= "✅ Projects table exists<br>";
         
@@ -136,11 +161,11 @@ try {
                 </div>
                 
                 <div class="flex gap-3">
-                    <a href="/projects/newPTS/index.php" 
+                    <a href="/Projects/ptsUltra/ptsv5ultra/index.php" 
                        class="flex-1 bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors text-center font-medium">
                         Go to Login Page
                     </a>
-                    <a href="/projects/newPTS/setup.php" 
+                    <a href="/Projects/ptsUltra/ptsv5ultra/setup.php" 
                        class="flex-1 bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition-colors text-center font-medium">
                         Run Full Setup
                     </a>

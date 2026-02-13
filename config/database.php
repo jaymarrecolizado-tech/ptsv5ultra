@@ -36,7 +36,11 @@ function getDB() {
 
 /**
  * Close database connection
+ * Note: PDO connections are automatically closed when the script ends.
+ * This function is kept for backward compatibility but is effectively a no-op.
+ * The static $db in getDB() cannot be unset from this function context.
  */
 function closeDB() {
-    $db = null;
+    // Connection will be closed automatically by PHP at script end
+    // This is by design in modern PHP applications using PDO
 }

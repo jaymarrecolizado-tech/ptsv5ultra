@@ -11,6 +11,12 @@ header('Content-Type: application/json');
 requireAuth();
 
 $method = $_SERVER['REQUEST_METHOD'];
+
+// Require CSRF validation for state-changing operations
+if (in_array($method, ['POST', 'PUT', 'DELETE'])) {
+    requireCsrfToken();
+}
+
 $uploadDir = __DIR__ . '/../uploads/';
 
 // Create uploads directory if not exists
@@ -93,9 +99,10 @@ try {
                         $stmt->execute([$projectId]);
                     }
                     
-                    // Save to database
+                    // Save to database - sanitize original_name to prevent path traversal
+                    $originalName = preg_replace('/[^a-zA-Z0-9._-]/', '_', $file['name']);
                     $stmt = $db->prepare("INSERT INTO project_photos (project_id, filename, original_name, file_size, mime_type, caption, is_primary, uploaded_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-                    $stmt->execute([$projectId, $filename, $file['name'], $file['size'], $file['type'], $caption, $isPrimary, $_SESSION['user_id']]);
+                    $stmt->execute([$projectId, $filename, $originalName, $file['size'], $file['type'], $caption, $isPrimary, $_SESSION['user_id']]);
                     
                     $photoId = $db->lastInsertId();
                     
@@ -149,9 +156,10 @@ try {
                         sendJsonResponse(false, null, 'Failed to save file');
                     }
                     
-                    // Save to database
+                    // Save to database - sanitize original_name to prevent path traversal
+                    $originalName = preg_replace('/[^a-zA-Z0-9._-]/', '_', $file['name']);
                     $stmt = $db->prepare("INSERT INTO project_documents (project_id, filename, original_name, file_size, mime_type, document_type, description, uploaded_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-                    $stmt->execute([$projectId, $filename, $file['name'], $file['size'], $file['type'], $docType, $description, $_SESSION['user_id']]);
+                    $stmt->execute([$projectId, $filename, $originalName, $file['size'], $file['type'], $docType, $description, $_SESSION['user_id']]);
                     
                     $docId = $db->lastInsertId();
                     

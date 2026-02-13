@@ -13,9 +13,15 @@ requireAuth();
 // Check if user is admin
 if (!isAdmin()) {
     sendJsonResponse(false, null, 'Access denied. Admin only.', []);
+    exit;
 }
 
 $method = $_SERVER['REQUEST_METHOD'];
+
+// Require CSRF validation for state-changing operations
+if (in_array($method, ['POST', 'PUT', 'DELETE'])) {
+    requireCsrfToken();
+}
 
 try {
     $db = getDB();
@@ -128,6 +134,19 @@ try {
                     // Don't allow deleting yourself
                     if ($userId === $_SESSION['user_id']) {
                         sendJsonResponse(false, null, 'Cannot delete your own account');
+                    }
+                    
+                    // Check if this is the last admin
+                    $stmt = $db->query("SELECT role FROM users WHERE id = ?");
+                    $stmt->execute([$userId]);
+                    $targetUser = $stmt->fetch();
+                    
+                    if ($targetUser && $targetUser['role'] === 'admin') {
+                        $stmt = $db->query("SELECT COUNT(*) FROM users WHERE role = 'admin'");
+                        $adminCount = (int)$stmt->fetchColumn();
+                        if ($adminCount <= 1) {
+                            sendJsonResponse(false, null, 'Cannot delete the last admin account');
+                        }
                     }
                     
                     $stmt = $db->prepare("DELETE FROM users WHERE id = ?");

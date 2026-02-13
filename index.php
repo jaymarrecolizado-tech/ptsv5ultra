@@ -50,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center">
+<body class="min-h-screen flex items-center justify-center" style="background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 50%, #1e1b4b 100%);">
     <!-- Three.js Particle Background -->
     <div id="canvas-container"></div>
     
@@ -61,8 +61,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
                 </svg>
             </div>
-            <h1 class="text-2xl font-bold text-white">Project Tracking System</h1>
-            <p class="text-gray-300 mt-2">Sign in to your account</p>
+            <h1 class="text-2xl font-bold text-white" style="text-shadow: 0 2px 4px rgba(0,0,0,0.3);">Project Tracking System</h1>
+            <p class="text-gray-300 mt-2" style="text-shadow: 0 1px 2px rgba(0,0,0,0.3);">Sign in to your account</p>
         </div>
         
         <?php if ($error): ?>

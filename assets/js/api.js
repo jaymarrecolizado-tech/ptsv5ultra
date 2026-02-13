@@ -3,7 +3,7 @@
  */
 
 const API = {
-    baseUrl: '/projects/newPTS/api',
+    baseUrl: '../api',
     
     /**
      * Make API request
@@ -98,8 +98,8 @@ const API = {
     // Import/Export API
     import: {
         upload: (formData) => API.upload('/import.php', formData),
-        export: () => window.location.href = '/projects/newPTS/api/import.php',
-        template: () => window.location.href = '/projects/newPTS/api/import.php?action=template'
+        export: () => window.location.href = '../api/import.php',
+        template: () => window.location.href = '../api/import.php?action=template'
     },
     
     // Reports API

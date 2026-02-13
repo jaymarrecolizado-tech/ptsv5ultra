@@ -7,7 +7,7 @@ require_once __DIR__ . '/includes/auth.php';
 
 // Redirect if already logged in
 if (isLoggedIn()) {
-    header('Location: /projects/newPTS/pages/dashboard.php');
+    header('Location: pages/dashboard.php');
     exit;
 }
 
@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = $_POST['password'] ?? '';
     
     if (login($username, $password)) {
-        header('Location: /projects/newPTS/pages/dashboard.php');
+        header('Location: pages/dashboard.php');
         exit;
     } else {
         $error = 'Invalid username or password';
@@ -83,7 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         <div class="mt-4 text-center text-sm">
             <p class="text-gray-500">Don't have an account? 
-                <a href="/projects/newPTS/pages/register.php" class="text-blue-600 hover:text-blue-800 font-medium">Create one</a>
+                <a href="pages/register.php" class="text-blue-600 hover:text-blue-800 font-medium">Create one</a>
             </p>
         </div>
     </div>

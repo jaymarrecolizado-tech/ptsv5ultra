@@ -242,7 +242,7 @@ const MapService = {
                     </div>
                     <p style="margin: 3px 0; color: #4b5563; font-size: 13px;"><strong>Date:</strong> ${project.activation_date_formatted || project.activation_date}</p>
                     <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #e5e7eb; display: flex; gap: 8px;">
-                        <a href="/projects/newPTS/pages/project-form.php?id=${project.id}" style="color: #3B82F6; font-size: 13px; font-weight: 600;">Edit Project →</a>
+                        <a href="../pages/project-form.php?id=${project.id}" style="color: #3B82F6; font-size: 13px; font-weight: 600;">Edit Project →</a>
                         <span style="color: #9ca3af;">|</span>
                         <button onclick="navigator.clipboard.writeText('${latFormatted}, ${lngFormatted}').then(() => alert('Coordinates copied!'))" style="color: #10B981; font-size: 13px; font-weight: 600; background: none; border: none; cursor: pointer;">Copy Coords</button>
                     </div>

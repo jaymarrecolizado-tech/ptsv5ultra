@@ -224,7 +224,7 @@ async function loadProjectsTable() {
                         </td>
                         <td class="px-4 py-3">
                             <div class="flex gap-2">
-                                <a href="/projects/newPTS/pages/project-form.php?id=${project.id}" 
+                                <a href="../pages/project-form.php?id=${project.id}" 
                                    class="text-blue-600 hover:text-blue-800 text-sm font-medium">Edit</a>
                                 <button onclick="deleteProject(${project.id})" 
                                         class="text-red-600 hover:text-red-800 text-sm font-medium">Delete</button>
@@ -344,7 +344,7 @@ function initProjectForm() {
             }
             
             // Redirect to projects list
-            window.location.href = '/projects/newPTS/pages/projects.php';
+            window.location.href = '../pages/projects.php';
         } catch (error) {
             Validator.showErrors([error.message]);
         }
@@ -653,7 +653,7 @@ async function loadStatusReport() {
                         <td class="px-4 py-3 text-sm text-gray-500">${p.activation_date_formatted}</td>
                         <td class="px-4 py-3 text-sm text-orange-600 font-medium">${p.pending_days} days</td>
                         <td class="px-4 py-3">
-                            <a href="/projects/newPTS/pages/project-form.php?id=${p.id}" 
+                            <a href="../pages/project-form.php?id=${p.id}" 
                                class="text-blue-600 hover:text-blue-800 text-sm font-medium">Edit</a>
                         </td>
                     </tr>

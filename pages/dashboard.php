@@ -181,7 +181,7 @@ require_once __DIR__ . '/../includes/header.php';
                 </svg>
                 Recent Projects
             </h3>
-            <a href="/projects/newPTS/pages/projects.php" class="text-blue-600 hover:text-blue-700 font-medium">View All</a>
+            <a href="../pages/projects.php" class="text-blue-600 hover:text-blue-700 font-medium">View All</a>
         </div>
         <div class="overflow-x-auto">
             <table class="w-full">
@@ -213,13 +213,13 @@ require_once __DIR__ . '/../includes/header.php';
                 Quick Actions
             </h3>
             <div class="space-y-3">
-                <a href="/projects/newPTS/pages/project-form.php" class="flex items-center gap-3 p-3 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors">
+                <a href="../pages/project-form.php" class="flex items-center gap-3 p-3 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors">
                     <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
                     </svg>
                     <span class="text-blue-700 font-medium">Add New Project</span>
                 </a>
-                <a href="/projects/newPTS/pages/import.php" class="flex items-center gap-3 p-3 bg-green-50 hover:bg-green-100 rounded-lg transition-colors">
+                <a href="../pages/import.php" class="flex items-center gap-3 p-3 bg-green-50 hover:bg-green-100 rounded-lg transition-colors">
                     <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
                     </svg>
@@ -231,7 +231,7 @@ require_once __DIR__ . '/../includes/header.php';
                     </svg>
                     <span class="text-purple-700 font-medium">Export All Data</span>
                 </button>
-                <a href="/projects/newPTS/pages/reports.php" class="flex items-center gap-3 p-3 bg-orange-50 hover:bg-orange-100 rounded-lg transition-colors">
+                <a href="../pages/reports.php" class="flex items-center gap-3 p-3 bg-orange-50 hover:bg-orange-100 rounded-lg transition-colors">
                     <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                     </svg>
@@ -249,7 +249,7 @@ require_once __DIR__ . '/../includes/header.php';
                     </svg>
                     Recent Activity
                 </h3>
-                <a href="<?php echo isAdmin() ? '/projects/newPTS/pages/admin.php' : '#'; ?>" class="text-sm text-blue-600 hover:text-blue-700">
+                <a href="<?php echo isAdmin() ? '../pages/admin.php' : '#'; ?>" class="text-sm text-blue-600 hover:text-blue-700">
                     <?php echo isAdmin() ? 'View All' : ''; ?>
                 </a>
             </div>
@@ -265,7 +265,7 @@ require_once __DIR__ . '/../includes/header.php';
 // Load activity feed
 async function loadActivityFeed() {
     try {
-        const response = await fetch('/projects/newPTS/api/activity.php?limit=10');
+        const response = await fetch('../api/activity.php?limit=10');
         const data = await response.json();
 
         if (data.success && data.data.logs.length > 0) {
@@ -317,7 +317,7 @@ let mapFilters = {
 async function loadMapFilterOptions() {
     try {
         // Load provinces
-        const response = await fetch('/projects/newPTS/api/locations.php?type=provinces');
+        const response = await fetch('../api/locations.php?type=provinces');
         const data = await response.json();
         if (data.success) {
             const select = document.getElementById('map-filter-province');
@@ -330,7 +330,7 @@ async function loadMapFilterOptions() {
         }
         
         // Load unique projects
-        const projectsResponse = await fetch('/projects/newPTS/api/projects.php?per_page=1000');
+        const projectsResponse = await fetch('../api/projects.php?per_page=1000');
         const projectsData = await projectsResponse.json();
         if (projectsData.success) {
             // Handle paginated response format
@@ -378,7 +378,7 @@ async function applyMapFilters() {
     params.append('per_page', '1000'); // Load all for map display
     
     try {
-        const response = await fetch(`/projects/newPTS/api/projects.php?${params}`);
+        const response = await fetch(`../api/projects.php?${params}`);
         const data = await response.json();
         
         if (data.success) {

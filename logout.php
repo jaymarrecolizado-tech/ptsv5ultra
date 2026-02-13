@@ -6,5 +6,5 @@
 require_once __DIR__ . '/includes/auth.php';
 
 logout();
-header('Location: /projects/newPTS/index.php');
+header('Location: ./index.php');
 exit;

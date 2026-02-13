@@ -19,11 +19,11 @@ if ($projectId) {
         $project = $stmt->fetch();
         
         if (!$project) {
-            header('Location: /projects/newPTS/pages/projects.php');
+            header('Location: ./pages/projects.php');
             exit;
         }
     } catch (Exception $e) {
-        header('Location: /projects/newPTS/pages/projects.php');
+        header('Location: ./pages/projects.php');
         exit;
     }
 }
@@ -163,7 +163,7 @@ if ($projectId) {
             </div>
             
             <div class="flex justify-end gap-3 pt-4 border-t border-gray-200">
-                <a href="/projects/newPTS/pages/projects.php" 
+                <a href="./pages/projects.php" 
                    class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
                     Cancel
                 </a>

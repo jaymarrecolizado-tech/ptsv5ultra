@@ -7,7 +7,7 @@ require_once __DIR__ . '/../includes/auth.php';
 
 // Redirect if already logged in
 if (isLoggedIn()) {
-    header('Location: /projects/newPTS/pages/dashboard.php');
+    header('Location: ../pages/dashboard.php');
     exit;
 }
 
@@ -170,7 +170,7 @@ $pageTitle = 'Register';
         
         <div class="mt-6 text-center text-sm">
             <p class="text-gray-500">Already have an account? 
-                <a href="/projects/newPTS/index.php" class="text-blue-600 hover:text-blue-800 font-medium">Sign in</a>
+                <a href="../index.php" class="text-blue-600 hover:text-blue-800 font-medium">Sign in</a>
             </p>
         </div>
         

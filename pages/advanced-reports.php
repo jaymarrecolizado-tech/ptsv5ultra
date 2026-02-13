@@ -182,7 +182,7 @@ document.addEventListener('DOMContentLoaded', function() {
 // Load provinces
 async function loadProvinces() {
     try {
-        const response = await fetch('/projects/newPTS/api/locations.php?type=provinces');
+        const response = await fetch('../api/locations.php?type=provinces');
         const data = await response.json();
         
         if (data.success) {
@@ -217,7 +217,7 @@ async function loadDistricts(province) {
     }
     
     try {
-        const response = await fetch(`/projects/newPTS/api/locations.php?type=districts&province=${encodeURIComponent(province)}`);
+        const response = await fetch(`../api/locations.php?type=districts&province=${encodeURIComponent(province)}`);
         const data = await response.json();
         
         if (data.success) {
@@ -244,7 +244,7 @@ async function loadDistricts(province) {
 // Load municipalities
 async function loadMunicipalities(province, district) {
     try {
-        const url = `/projects/newPTS/api/locations.php?type=municipalities&province=${encodeURIComponent(province)}&district=${encodeURIComponent(district)}`;
+        const url = `../api/locations.php?type=municipalities&province=${encodeURIComponent(province)}&district=${encodeURIComponent(district)}`;
         const response = await fetch(url);
         const data = await response.json();
         
@@ -272,7 +272,7 @@ async function loadMunicipalities(province, district) {
 // Load barangays
 async function loadBarangays(province, district, municipality) {
     try {
-        const url = `/projects/newPTS/api/locations.php?type=barangays&province=${encodeURIComponent(province)}&district=${encodeURIComponent(district)}&municipality=${encodeURIComponent(municipality)}`;
+        const url = `../api/locations.php?type=barangays&province=${encodeURIComponent(province)}&district=${encodeURIComponent(district)}&municipality=${encodeURIComponent(municipality)}`;
         const response = await fetch(url);
         const data = await response.json();
         
@@ -305,7 +305,7 @@ async function generateReport() {
             }
         });
         
-        const response = await fetch(`/projects/newPTS/api/projects.php?${params}`);
+        const response = await fetch(`../api/projects.php?${params}`);
         const data = await response.json();
         
         if (data.success) {
@@ -433,13 +433,13 @@ function resetFilters() {
 function exportPDF() {
     const filters = getCurrentFilters();
     const params = new URLSearchParams({...filters, type: 'pdf'});
-    window.open(`/projects/newPTS/api/export.php?${params}`, '_blank');
+    window.open(`../api/export.php?${params}`, '_blank');
 }
 
 function exportExcel() {
     const filters = getCurrentFilters();
     const params = new URLSearchParams({...filters, type: 'csv'});
-    window.location.href = `/projects/newPTS/api/export.php?${params}`;
+    window.location.href = `../api/export.php?${params}`;
 }
 
 // Get current filter values

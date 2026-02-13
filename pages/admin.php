@@ -10,7 +10,7 @@ require_once __DIR__ . '/../includes/auth.php';
 
 // Check admin access
 if (!isAdmin()) {
-    header('Location: /projects/newPTS/pages/dashboard.php');
+    header('Location: ../pages/dashboard.php');
     exit;
 }
 ?>
@@ -234,7 +234,7 @@ function switchAdminTab(tab) {
 
 async function loadUsers() {
     try {
-        const response = await fetch('/projects/newPTS/api/admin.php');
+        const response = await fetch('../api/admin.php');
         const data = await response.json();
         
         if (data.success) {
@@ -279,7 +279,7 @@ async function loadUsers() {
 
 async function loadActivityLogs() {
     try {
-        const response = await fetch('/projects/newPTS/api/activity.php');
+        const response = await fetch('../api/activity.php');
         const data = await response.json();
         
         if (data.success) {
@@ -319,7 +319,7 @@ document.getElementById('add-user-form')?.addEventListener('submit', async (e) =
     data.action = 'create_user';
     
     try {
-        const response = await fetch('/projects/newPTS/api/admin.php', {
+        const response = await fetch('../api/admin.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
@@ -342,7 +342,7 @@ async function resetPassword(userId) {
     if (!confirm('Reset password for this user?')) return;
     
     try {
-        const response = await fetch('/projects/newPTS/api/admin.php', {
+        const response = await fetch('../api/admin.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'reset_password', user_id: userId })
@@ -361,7 +361,7 @@ async function deleteUser(userId) {
     if (!confirm('Are you sure you want to delete this user?')) return;
     
     try {
-        const response = await fetch('/projects/newPTS/api/admin.php', {
+        const response = await fetch('../api/admin.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'delete_user', user_id: userId })

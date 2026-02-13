@@ -21,7 +21,7 @@ function requireAuth() {
         if (isApiRequest()) {
             sendJsonResponse(false, null, 'Authentication required', []);
         } else {
-            header('Location: /newPTS/index.php');
+            header('Location: ../index.php');
             exit;
         }
     }

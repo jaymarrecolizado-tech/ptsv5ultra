@@ -31,7 +31,7 @@ require_once __DIR__ . '/../includes/header.php';
                     <option value="all">All Provinces</option>
                 </select>
             </div>
-            <a href="/projects/newPTS/pages/project-form.php" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2">
+            <a href="./pages/project-form.php" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
                 </svg>
@@ -155,7 +155,7 @@ function renderProjectsTable(projects) {
             </td>
             <td class="px-4 py-3">
                 <div class="flex gap-2">
-                    <a href="/projects/newPTS/pages/project-form.php?id=${project.id}" class="text-blue-600 hover:text-blue-800 text-sm font-medium">Edit</a>
+                    <a href="./pages/project-form.php?id=${project.id}" class="text-blue-600 hover:text-blue-800 text-sm font-medium">Edit</a>
                     <button onclick="deleteProject(${project.id})" class="text-red-600 hover:text-red-800 text-sm font-medium">Delete</button>
                 </div>
             </td>

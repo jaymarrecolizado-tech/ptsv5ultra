@@ -77,7 +77,7 @@ require_once __DIR__ . '/../includes/header.php';
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <h3 class="text-lg font-semibold text-gray-800 mb-4">CSV Template</h3>
         <p class="text-gray-600 mb-4">Download the CSV template to ensure your data is in the correct format.</p>
-        <a href="/projects/newPTS/api/import.php?action=template" 
+        <a href="../api/import.php?action=template" 
            class="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>

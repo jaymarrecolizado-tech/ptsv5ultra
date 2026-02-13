@@ -21,11 +21,11 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <!-- Application Scripts -->
-    <script src="/projects/newPTS/assets/js/api.js"></script>
-    <script src="/projects/newPTS/assets/js/validation.js"></script>
-    <script src="/projects/newPTS/assets/js/map.js"></script>
-    <script src="/projects/newPTS/assets/js/charts.js"></script>
-    <script src="/projects/newPTS/assets/js/app.js"></script>
+    <script src="../assets/js/api.js"></script>
+    <script src="../assets/js/validation.js"></script>
+    <script src="../assets/js/map.js"></script>
+    <script src="../assets/js/charts.js"></script>
+    <script src="../assets/js/app.js"></script>
 <?php endif; ?>
 
 </body>

@@ -29,11 +29,11 @@ if ($projectId) {
         $project = $stmt->fetch();
         
         if (!$project) {
-            header('Location: ./pages/projects.php');
+            header('Location: projects.php');
             exit;
         }
     } catch (Exception $e) {
-        header('Location: ./pages/projects.php');
+        header('Location: projects.php');
         exit;
     }
 }

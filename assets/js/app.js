@@ -232,7 +232,7 @@ async function loadProjectsTable() {
                         </td>
                         <td class="px-4 py-3">
                             <div class="flex gap-2">
-                                <a href="./pages/project-form.php?id=${project.id}" 
+                                <a href="./project-form.php?id=${project.id}" 
                                    class="text-blue-600 hover:text-blue-800 text-sm font-medium">Edit</a>
                                 <button onclick="deleteProject(${project.id})" 
                                         class="text-red-600 hover:text-red-800 text-sm font-medium">Delete</button>
